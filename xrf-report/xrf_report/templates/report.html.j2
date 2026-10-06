@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% if plotly_inline %}<script>{{ plotly_inline | safe }}</script>
+{% else %}<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@{{ plotly_version }}/plotly.min.js"></script>{% endif %}
+<style>
+:root{
+  --bg:#f4f3ef; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#8a8984; --line:#e6e5e0;
+  --accent:#2a78d6; --accent-soft:#eaf1fb;
+  --good:#0ca30c; --good-ink:#006300; --good-soft:#e3f4e3;
+  --warn:#fab219; --warn-ink:#8a5a00; --warn-soft:#fef3d9;
+  --bad:#d03b3b; --bad-ink:#a42525; --bad-soft:#fbe5e5;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 Inter,"Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 64px}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+header.top .wrap{display:flex;align-items:center;gap:24px;padding-top:12px;padding-bottom:12px}
+.brand{font-weight:700;letter-spacing:-.01em}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav a{color:var(--ink2);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:8px}
+nav a:hover{background:var(--accent-soft);color:var(--accent)}
+.hero{padding:36px 0 8px}
+.hero h1{font-size:30px;line-height:1.2;letter-spacing:-.02em;margin:0 0 6px}
+.hero p{margin:0;color:var(--ink2)}
+.meta{color:var(--muted);font-size:12px;margin-top:6px}
+section{margin-top:28px}
+h2{font-size:19px;letter-spacing:-.01em;margin:0 0 4px}
+.sub{color:var(--ink2);margin:0 0 14px;max-width:820px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.kpi .label{color:var(--ink2);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.kpi .value{font-size:32px;font-weight:700;letter-spacing:-.02em;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .delta{font-size:12px;font-weight:500}
+.delta.up{color:var(--good-ink)} .delta.down{color:var(--bad-ink)} .delta.flat{color:var(--muted)}
+.health{display:flex;gap:4px;height:8px;margin-top:10px;border-radius:4px;overflow:hidden}
+.health span{display:block;height:100%}
+.legend-row span{white-space:nowrap}
+.legend-row{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink2);margin-top:6px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.Green{background:var(--good-soft);color:var(--good-ink)}
+.pill.Amber{background:var(--warn-soft);color:var(--warn-ink)}
+.pill.Red{background:var(--bad-soft);color:var(--bad-ink)}
+.insights{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.insight{border-left:4px solid var(--line)}
+.insight.Red{border-left-color:var(--bad)} .insight.Amber{border-left-color:var(--warn)} .insight.Green{border-left-color:var(--good)}
+.insight h3{font-size:15px;margin:8px 0 4px}
+.insight p{margin:0;color:var(--ink2)}
+.insight .action{margin-top:8px;font-size:13px;color:var(--ink)}
+.insight .action b{color:var(--accent)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-weight:600;color:var(--ink2);font-size:12px;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface)}
+th.num,td.num{text-align:right}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:hover td{background:#f7f6f2}
+td.why{color:var(--ink2);min-width:240px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.toolbar select,.toolbar input{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.chip{font:inherit;font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--ink2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.two{grid-template-columns:1fr 1fr}
+.lj-info{font-size:12px;color:var(--muted)}
+.note{font-size:12px;color:var(--ink2)}
+.warnbox{background:var(--warn-soft);border:1px solid #f3d48a;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:14px}
+details summary{cursor:pointer;font-weight:600}
+dl.rules{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:10px 0 0}
+dl.rules dt{font-weight:600}
+dl.rules dd{margin:0;color:var(--ink2)}
+  .print-only{display:none}
+footer{margin-top:40px;color:var(--muted);font-size:12px}
+@media (max-width:820px){.two{grid-template-columns:1fr}.hero h1{font-size:24px}nav{display:none}.wrap{padding:0 16px 48px}}
+@media print{
+  header.top,.toolbar,.no-print{display:none!important}
+  body{background:#fff;font-size:11px}
+  .card{break-inside:avoid;border-color:#ddd}
+  section{break-inside:avoid-page}
+  .lj-panel{display:block!important;break-inside:avoid}
+  .print-only{display:block!important}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">XRF Performance Monitor<small>{{ week_label }}</small></div>
+  <nav>
+    <a href="#summary">Summary</a><a href="#findings">Findings</a><a href="#scorecard">Scorecard</a>
+    <a href="#trends">Trends</a><a href="#control">Control charts</a><a href="#accuracy">Accuracy</a>
+    <a href="#events">Violations</a><a href="#method">Method</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+<div class="hero">
+  <h1>{{ title }}</h1>
+  <p>{{ week_label }} · {{ k.instruments|length }} instrument{{ 's' if k.instruments|length != 1 }} · {{ k.elements|length }} elements · {{ k.n_results }} QC results</p>
+  <div class="meta">Source: {{ source }} · history: {{ n_weeks }} weeks ({{ first_date.strftime('%d %b %Y') }} – {{ last_date.strftime('%d %b %Y') }}) · generated {{ generated }}</div>
+  {% if warnings %}<div class="warnbox"><b>Data quality:</b> {{ warnings|join(' ') }}</div>{% endif %}
+</div>
+
+<section id="summary">
+  <div class="grid kpis">
+    <div class="card kpi">
+      <div class="label">Performance health</div>
+      <div class="value">{{ k.health|f('.0f') }}<span style="font-size:18px;color:var(--muted)">/100</span></div>
+      <div class="health">
+        {% if k.n_green %}<span style="flex:{{ k.n_green }};background:var(--good)"></span>{% endif %}
+        {% if k.n_amber %}<span style="flex:{{ k.n_amber }};background:var(--warn)"></span>{% endif %}
+        {% if k.n_red %}<span style="flex:{{ k.n_red }};background:var(--bad)"></span>{% endif %}
+      </div>
+      <div class="legend-row"><span>✓ {{ k.n_green }} in control</span><span>! {{ k.n_amber }} watch</span><span>✕ {{ k.n_red }} out</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Results within spec</div>
+      <div class="value">{{ k.in_spec|f('.1f', '%') }}</div>
+      <div class="delta {{ d_inspec.cls }}">{{ d_inspec.text }}</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Mean absolute bias</div>
+      <div class="value">{{ k.mean_abs_bias|f('.2f', '%') }}</div>
+      <div class="delta {{ d_bias.cls }}">{{ d_bias.text }}</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Control-rule violations</div>
+      <div class="value" style="color:{{ 'var(--bad-ink)' if k.n_events else 'var(--good-ink)' }}">{{ k.n_events }}</div>
+      <div class="delta flat">Westgard multi-rule, report week</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">QC results analysed</div>
+      <div class="value">{{ k.n_results }}</div>
+      <div class="delta flat">{{ d_n.text }}</div>
+    </div>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Key findings &amp; actions</h2>
+  <p class="sub">Generated automatically from the checks below, most severe first.</p>
+  <div class="grid insights">
+  {% for i in insights %}
+    <div class="card insight {{ i.severity }}">
+      <span class="pill {{ i.severity }}">{{ {'Red':'✕ Act now','Amber':'! Watch','Green':'✓ Good'}[i.severity] }}</span>
+      <h3>{{ i.title }}</h3>
+      <p>{{ i.text }}</p>
+      {% if i.action %}<div class="action"><b>Action →</b> {{ i.action }}</div>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+</section>
+
+<section id="status">
+  <h2>Status matrix</h2>
+  <p class="sub">Each cell is one instrument/element combination this week. The value is mean recovery against the certified reference; hover a cell to see why it has that status.</p>
+  <div class="card">{{ fig_status|safe }}
+    <div class="legend-row"><span><i class="dot" style="background:var(--good)"></i>✓ In control</span><span><i class="dot" style="background:var(--warn)"></i>! Watch</span><span><i class="dot" style="background:var(--bad)"></i>✕ Out of control</span></div>
+  </div>
+</section>
+
+<section id="scorecard">
+  <h2>Scorecard</h2>
+  <p class="sub">Accuracy (bias), precision (SD of recovery), conformity, week-on-week change and 12-week drift for every combination. Click a column header to sort.</p>
+  <div class="card">
+    <div class="toolbar">
+      <button class="chip on" data-f="all">All</button><button class="chip" data-f="Red">✕ Out</button>
+      <button class="chip" data-f="Amber">! Watch</button><button class="chip" data-f="Green">✓ In control</button>
+      <input id="sc-search" placeholder="Filter element or instrument…" style="margin-left:auto;min-width:220px">
+    </div>
+    <div class="table-wrap"><table id="sc">
+      <thead><tr><th>Status</th><th>Element</th><th>Instrument</th><th class="num">n</th><th class="num">Recovery</th><th class="num">Bias</th><th class="num">SD</th><th class="num">In spec</th><th class="num">Δ vs last wk</th><th class="num">Drift</th><th>Rules</th><th>Why</th></tr></thead>
+      <tbody>
+      {% for r in scorecard %}
+        <tr data-status="{{ r.status }}"><td><span class="pill {{ r.status }}">{{ {'Red':'✕','Amber':'!','Green':'✓'}[r.status] }} {{ r.status }}</span></td>
+        <td><b>{{ r.element }}</b></td><td>{{ r.instrument }}</td><td class="num">{{ r.n }}</td><td class="num">{{ r.recovery }}</td>
+        <td class="num">{{ r.bias }}</td><td class="num">{{ r.sd }}</td><td class="num">{{ r.in_spec }}</td><td class="num">{{ r.delta }}</td>
+        <td class="num">{{ r.trend }}</td><td>{{ r.rules }}</td><td class="why">{{ r.reasons }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="trends">
+  <h2>Weekly recovery trends</h2>
+  <p class="sub">Weekly mean recovery per element over up to 26 weeks. The shaded band is the warning zone (default ±{{ th.recovery_warn|f('g') }}%) and the dotted red lines are the action limits (default ±{{ th.recovery_action|f('g') }}%). Elements with their own limits use them. The dashed vertical line marks the report week.</p>
+  <div class="card">{{ fig_trends|safe }}</div>
+</section>
+
+<section id="control">
+  <h2>Levey-Jennings control charts</h2>
+  <p class="sub">Each CRM result is shown as a z-score against its baseline mean and SD. Points marked ✕ broke a Westgard rule. Choose a combination below; problem combinations are listed first.</p>
+  <div class="card">
+    <div class="toolbar">
+      <select id="lj-select">
+        {% for s in ['Red','Amber','Green'] %}{% for c in lj if c.status == s %}
+          <option value="{{ c.key }}">{{ {'Red':'✕','Amber':'!','Green':'✓'}[s] }} {{ c.label }}</option>
+        {% endfor %}{% endfor %}
+      </select>
+      <span class="lj-info" id="lj-info"></span>
+    </div>
+    {% for c in lj %}
+      <div class="lj-panel" id="{{ c.key }}" data-info="Baseline mean {{ c.mean|f('.2f','%') }} · SD {{ c.sd|f('.2f','%') }} · limits from {{ c.source }}" style="display:none">
+        <div class="print-only note" style="font-weight:600">{{ c.label }}</div>
+        {{ c.html|safe }}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="accuracy">
+  <h2>Accuracy &amp; precision</h2>
+  <p class="sub">Left: mean bias this week, with whiskers at ±1 SD. Right: within-week precision. Each red tick marks that element's limit, and bars over their limit are highlighted.</p>
+  <div class="card">{{ fig_biasprec|safe }}</div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h2 style="font-size:15px">Recovery vs concentration</h2><p class="note">Every result from the report week, plotted against its certified level. Trace-level results usually spread wider. Look for a level-dependent bias, which points to a calibration-curve or matrix-correction problem.</p>{{ fig_scatter|safe }}</div>
+    <div class="card"><h2 style="font-size:15px">Recovery distribution</h2><p class="note">The report week compared with the previous three weeks. Watch for a shift in the median or a wider spread.</p>{{ fig_dist|safe }}</div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2 style="font-size:15px">QC workload</h2><p class="note">QC results per instrument per week, last 12 weeks. A drop can mean QC frequency is slipping.</p>{{ fig_volume|safe }}</div>
+</section>
+
+<section id="events">
+  <h2>Control-rule violations this week</h2>
+  {% if events %}
+  <p class="sub">{{ events|length }} result{{ 's' if events|length != 1 }} broke at least one Westgard rule.</p>
+  <div class="card table-wrap"><table>
+    <thead><tr><th>When</th><th>Instrument</th><th>Element</th><th>Standard</th><th>Operator</th><th class="num">Measured</th><th class="num">Certified</th><th class="num">Recovery</th><th class="num">z</th><th>Rule(s)</th></tr></thead>
+    <tbody>{% for e in events %}<tr><td>{{ e.date }}</td><td>{{ e.instrument }}</td><td><b>{{ e.element }}</b></td><td>{{ e.standard }}</td><td>{{ e.operator }}</td><td class="num">{{ e.measured }}</td><td class="num">{{ e.certified }}</td><td class="num">{{ e.recovery }}</td><td class="num">{{ e.z }}</td><td>{{ e.rules }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="card"><span class="pill Green">✓ None</span> No control rules were broken this week.</div>{% endif %}
+</section>
+
+<section id="method">
+  <h2>Method &amp; thresholds</h2>
+  <div class="card">
+    <p class="note"><b>Recovery</b> = measured ÷ certified × 100. <b>Bias</b> = recovery − 100. <b>Precision</b> is the SD of recovery within the week. <b>Control limits</b> come from the previous {{ th.baseline_weeks }} weeks of each instrument/element; with fewer than {{ th.min_baseline_n }} points, all available data is used. <b>Drift</b> is a linear fit of recovery over the last {{ th.trend_weeks }} weeks, flagged when |slope| ≥ {{ th.drift_slope_pts_per_week }} pts/week and R² ≥ {{ th.drift_min_r2 }}.</p>
+    <p class="note"><b>Status</b> (defaults shown; per-element limits from the workbook's <i>Limits</i> sheet take precedence): <span class="pill Red">✕ Red</span> means |bias| &gt; {{ th.recovery_action|f('g') }}%, a 1-3s, 2-2s or R-4s violation, or SD &gt; {{ (th.precision_limit*2)|f('g') }}%. <span class="pill Amber">! Amber</span> means |bias| &gt; {{ th.recovery_warn|f('g') }}%, a 4-1s or 10-x violation, SD &gt; {{ th.precision_limit|f('g') }}%, drift, or fewer than {{ th.in_spec_min_pct|f('g') }}% of results in spec. Otherwise <span class="pill Green">✓ Green</span>.</p>
+    <details><summary>Westgard rules</summary><dl class="rules">{% for r, t in rule_text.items() %}<dt>{{ r }}</dt><dd>{{ t }}</dd>{% endfor %}</dl></details>
+  </div>
+</section>
+
+<footer>XRF Performance Monitor v{{ version }} · thresholds can be changed in <code>xrf_report/config.py</code> or with command-line flags.</footer>
+</div>
+
+<script>
+(function(){
+  // LJ selector
+  var sel=document.getElementById('lj-select'), info=document.getElementById('lj-info');
+  function show(id){
+    document.querySelectorAll('.lj-panel').forEach(function(p){p.style.display=p.id===id?'block':'none'});
+    var p=document.getElementById(id); if(!p) return;
+    info.textContent=p.dataset.info;
+    var g=p.querySelector('.plotly-graph-div'); if(g&&window.Plotly) Plotly.Plots.resize(g);
+  }
+  if(sel){sel.addEventListener('change',function(){show(sel.value)}); show(sel.value);}
+  // scorecard filter
+  var state='all', q='';
+  function apply(){
+    document.querySelectorAll('#sc tbody tr').forEach(function(tr){
+      var ok=(state==='all'||tr.dataset.status===state)&&(!q||tr.textContent.toLowerCase().indexOf(q)>-1);
+      tr.style.display=ok?'':'none';
+    });
+  }
+  document.querySelectorAll('.chip').forEach(function(b){b.addEventListener('click',function(){
+    document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')}); b.classList.add('on'); state=b.dataset.f; apply();
+  })});
+  var s=document.getElementById('sc-search'); if(s) s.addEventListener('input',function(){q=s.value.toLowerCase(); apply();});
+  // sortable tables
+  document.querySelectorAll('table').forEach(function(t){
+    t.querySelectorAll('th').forEach(function(th,i){th.addEventListener('click',function(){
+      var tb=t.tBodies[0], rows=[].slice.call(tb.rows), asc=th.dataset.asc!=='1'; th.dataset.asc=asc?'1':'0';
+      var num=function(v){var n=parseFloat(v.replace(/[^0-9.+\-]/g,''));return isNaN(n)?null:n};
+      rows.sort(function(a,b){var x=a.cells[i].textContent.trim(),y=b.cells[i].textContent.trim(),nx=num(x),ny=num(y);
+        var c=(nx!==null&&ny!==null)?nx-ny:x.localeCompare(y); return asc?c:-c;});
+      rows.forEach(function(r){tb.appendChild(r)});
+    })});
+  });
+  window.addEventListener('beforeprint',function(){document.querySelectorAll('.lj-panel').forEach(function(p){p.style.display='block'})});
+  window.addEventListener('afterprint',function(){show(sel.value)});
+})();
+</script>
+</body>
+</html>
